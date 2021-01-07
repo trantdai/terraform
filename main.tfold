@@ -1,0 +1,574 @@
+#Test if variable is null or not
+/*
+count = var.null_variable == null ? 0 : 1
+count = var.null_variable != null ? 1 : 0
+*/
+
+#Test if variable is blank list or not. If not, listvar = blank_list, else listvar = ""
+/*
+listvar = var.blank_list != "" ? var.blank_list : []
+*/
+
+#Convert list of map to map with the key is mapitem.name and value is a map - an item from list
+#list2map = { for mapitem in var.maplist : mapitem.name => mapitem }
+/*
+output "null_variable" {
+  value = var.null_variable != null ? var.null_variable : "null"
+}
+
+output "listvar" {
+  value = var.blank_list != "" ? var.blank_list : []
+}
+
+output "list2map" {
+  value = { for mapitem in var.maplist : mapitem.name => mapitem }
+}
+
+output "boolvar" {
+  value = var.username == "" || var.password == ""
+}
+
+variable "firevm" {
+  type = any
+  default = {
+    name   = "azrfwt300"
+    vmsize = "Standard_D3_v2"
+    plan = {
+      name      = "byol"
+      publisher = "paloaltonetworks"
+      product   = "vmseries-flex"
+    }
+    storage_image_reference = {
+      publisher = "paloaltonetworks"
+      offer     = "vmseries-flex"
+      sku       = "byol"
+      version   = "9.1.2"
+    }
+    storage_os_disk = {
+      name          = "azrfwt300a_os_disk"
+      caching       = "ReadWrite"
+      create_option = "FromImage"
+    }
+  }
+}
+
+output "vmname" {
+  #value = var.firevm["name"]
+  value = var.firevm.name
+}
+
+output "vmplan" {
+  value = lookup(var.firevm, "plan", "") != "" ? lookup(var.firevm["plan"], "name", "byol") : "byol"
+}
+
+locals {
+  maptest = {
+    key1 = "value1"
+    key2 = "value2"
+  }
+  maptest1 = {
+    key1 = "value1"
+    key2 = "value2"
+  }
+  maptest2 = {
+
+  }
+}
+
+output "key1" {
+  value = local.maptest["key1"]
+}
+
+locals {
+  foreachmap = {
+    for key in keys(local.maptest) : key => local.maptest[key]
+  }
+}
+
+output "foreachmap" {
+  value = local.foreachmap
+}
+
+locals {
+  testlist = ["a", "b", "c"]
+}
+
+output "testlist" {
+  #b
+  value = local.testlist[1]
+}
+
+output "fortestlist" {
+  value = [for item in local.testlist : item]
+}
+*/
+# How to use TF_VAR_
+# Set env variable TF_VAR_hello like below in PowerShell
+# PS C:\Users\dtran\Documents\Fireauto> $env:TF_VAR_hello = "Hello"
+# variable "hello" {}
+# Show value
+/*
+Outputs:
+hello = Hello
+*/
+/*
+output "hello" {
+  value = var.hello
+}
+*/
+/*
+# object variable
+variable "docker_ports" {
+  type = list(object({
+    internal = number
+    external = number
+    protocol = string
+  }))
+  default = [
+    {
+      internal = 8300
+      external = 8300
+      protocol = "tcp"
+    }
+  ]
+}
+
+output "first_docker_port" {
+  value = var.docker_ports[0]
+}
+
+output "internal_docker_port" {
+  value = var.docker_ports[0].internal
+}
+
+# splat expression
+locals {
+  random_id = {
+    tf_bucket_id = [
+      {
+        id = "tsA"
+      },
+      {
+        id = "qKs"
+      },
+      {
+        id = "6_0"
+      }
+    ]
+  }
+}
+
+output "random_id" {
+  value = local.random_id.tf_bucket_id[*].id
+}
+
+locals {
+  foo = [
+    {
+      bar = [
+        {
+          baz = 19
+        },
+        {
+          baz = 14
+        },
+        {
+          baz = 10
+        }
+      ]
+    }
+  ]
+}
+
+output "foo" {
+  value = local.foo[*].bar[*].baz
+}
+
+#List testing
+locals {
+  foolist = ["hello", "world"]
+}
+# New list of upper cases
+output "foolist" {
+  value = [for f in local.foolist : upper(f)]
+}
+# New object whose attributes are the original elements from var.list and their corresponding values are the uppercase versions.
+output "fooobject" {
+  value = { for f in local.foolist : f => upper(f) }
+}
+output "fooconditional" {
+  value = [for f in local.foolist : upper(f) if f != "world"]
+}
+
+# For map and object
+locals {
+  fooformap = {
+    key1 = "value1"
+    key2 = "value2"
+  }
+  forlist = [
+    "value1",
+    "value2",
+    "key1"
+  ]
+}
+output "fooformap" {
+  value = [for k, v in local.fooformap : length(k) + length(v)]
+}
+
+fooforlist = {
+  "ke" = [
+    "key1",
+  ]
+  "va" = [
+    "value1",
+    "value2",
+  ]
+}
+
+output fooforlist {
+  value = { for e in local.forlist : substr(e, 0, 2) => e... if e != "" }
+}
+*/
+
+# Flatten
+locals {
+  user_policy_map = {
+    "user 1" = ["policy1", "policy2"],
+    "user 2" = ["policy1"]
+  }
+  association-list = [
+    for user in keys(local.user_policy_map) : [
+      for policy in local.user_policy_map[user] : [
+        user,
+        policy
+      ]
+    ]
+  ]
+}
+/*
+Outputs:
+
+association-list = [
+  [
+    [
+      "user 1",
+      "policy1",
+    ],
+    [
+      "user 1",
+      "policy2",
+    ],
+  ],
+  [
+    [
+      "user 2",
+      "policy1",
+    ],
+  ],
+]
+association-list-flatten = [
+  "user 1",
+  "policy1",
+  "user 1",
+  "policy2",
+  "user 2",
+  "policy1",
+]
+*/
+output "association-list" {
+  value = local.association-list
+}
+output "association-list-flatten" {
+  value = flatten(local.association-list)
+}
+variable "networks" {
+  type = map(object({
+    cidr_block = string
+    subnets    = map(object({ cidr_block = string }))
+  }))
+  default = {
+    net1 = {
+      cidr_block = "1.1.1.0/24"
+      subnets = {
+        subnet1 = {
+          cidr_block = "1.1.1.0/27"
+        }
+        subnet2 = {
+          cidr_block = "1.1.1.32/27"
+        }
+      }
+    }
+    net2 = {
+      cidr_block = "1.1.2.0/24"
+      subnets = {
+        subnet3 = {
+          cidr_block = "1.1.2.64/27"
+        }
+        subnet4 = {
+          cidr_block = "1.1.2.96/27"
+        }
+      }
+    }
+  }
+}
+locals {
+  network_subnets = [
+    for network_key, network in var.networks : [
+      for subnet_key, subnet in network.subnets : {
+        network_key = network_key
+        subnet_key  = subnet_key
+        cidr_block  = subnet.cidr_block
+      }
+    ]
+  ]
+}
+/*
+network_subnets = [
+  [
+    {
+      "cidr_block" = "1.1.1.0/27"
+      "network_key" = "net1"
+      "subnet_key" = "subnet1"
+    },
+    {
+      "cidr_block" = "1.1.1.32/27"
+      "network_key" = "net1"
+      "subnet_key" = "subnet2"
+    },
+  ],
+  [
+    {
+      "cidr_block" = "1.1.2.64/27"
+      "network_key" = "net2"
+      "subnet_key" = "subnet3"
+    },
+    {
+      "cidr_block" = "1.1.2.96/27"
+      "network_key" = "net2"
+      "subnet_key" = "subnet4"
+    },
+  ],
+]
+*/
+output "network_subnets" {
+  value = local.network_subnets
+}
+/*
+flatten_network_subnets = [
+  {
+    "cidr_block" = "1.1.1.0/27"
+    "network_key" = "net1"
+    "subnet_key" = "subnet1"
+  },
+  {
+    "cidr_block" = "1.1.1.32/27"
+    "network_key" = "net1"
+    "subnet_key" = "subnet2"
+  },
+  {
+    "cidr_block" = "1.1.2.64/27"
+    "network_key" = "net2"
+    "subnet_key" = "subnet3"
+  },
+  {
+    "cidr_block" = "1.1.2.96/27"
+    "network_key" = "net2"
+    "subnet_key" = "subnet4"
+  },
+]
+*/
+output "flatten_network_subnets" {
+  value = flatten(local.network_subnets)
+}
+
+# count and count.index
+# https://blog.gruntwork.io/terraform-tips-tricks-loops-if-statements-and-gotchas-f739bbae55f9
+/*
+variable "user_names" {
+  description = "Create IAM users with these names"
+  type        = list(string)
+  default     = ["neo", "trinity", "morpheus"]
+}
+resource "aws_iam_user" "example" {
+  count = length(var.user_names)
+  name  = var.user_names[count.index]
+}
+*/
+# local-exec
+resource "null_resource" "example2" {
+  provisioner "local-exec" {
+    command     = "Get-Date > completed.txt"
+    interpreter = ["PowerShell", "-Command"]
+  }
+}
+
+locals {
+  firewall_interfaces = {
+    azrfwd300a = {
+      management = {
+        address_allocation_method = "Static"
+        ip_address                = "10.48.138.45"
+        #management_interface      = true
+        interface_port = 0
+        public_ip      = false
+      }
+      public = {
+        address_allocation_method = "Static"
+        ip_address                = "10.48.138.125"
+        interface_port            = 1
+        public_ip                 = true
+      }
+      private = {
+        address_allocation_method = "Static"
+        ip_address                = "10.48.138.91"
+        interface_port            = 2
+        public_ip                 = false
+        loadbalancer              = "internal"
+      }
+    }
+    azrfwd300b = {
+      management = {
+        address_allocation_method = "Static"
+        ip_address                = "10.48.138.46"
+        management_interface      = true
+        public_ip                 = false
+      }
+      public = {
+        address_allocation_method = "Static"
+        ip_address                = "10.48.138.126"
+        public_ip                 = true
+      }
+      private = {
+        address_allocation_method = "Static"
+        ip_address                = "10.48.138.92"
+        public_ip                 = false
+      }
+    }
+  }
+  truevar = true
+
+  /*
+public_ips = {
+    for_each = local.firewall_interfaces
+    count = each.value.public_ip ? 1 : 0
+
+}
+*/
+}
+/*
+output "firewall_interface_keys" {
+    value = keys(local.firewall_interfaces)
+}
+
+output "firewall_interface_key0" {
+    value = keys(local.firewall_interfaces)[0]
+}
+
+output "firewall_interface_key1" {
+    value = keys(local.firewall_interfaces)[1]
+}
+*/
+#output "firewall1_management_interface" {
+#  value = coalesce([for k, v in local.firewall_interfaces.azrfwd300a : lookup(v, "management_interface", false) ? k : #""]...)
+#}
+/*
+output "internal_backend_interface" {
+  value = coalesce([for k, v in local.firewall_interfaces.azrfwd300a : lookup(v, "management_interface", false) ? k : ""]...)
+}
+*/
+#https://medium.com/@business_99069/terraform-conditional-resources-based-on-a-map-key-a37fd329d3a1
+output "firewall1_public_ip_interfaces" {
+  value = { for k, v in local.firewall_interfaces.azrfwd300a : k => lookup(v, "public_ip", false) if lookup(v, "public_ip", false) }
+}
+
+output "firewall1_map_loop_through" {
+  value = [for e in local.firewall_interfaces.azrfwd300a : e]
+}
+/*
+output "firewall_interface_values" {
+    value = values(local.firewall_interfaces)
+}
+*/
+/*
+output "firewall1_interface_keys" {
+    value = keys(values(local.firewall_interfaces)[0])
+}
+
+output "firewall1_mgmt_interface" {
+    value = keys(values(local.firewall_interfaces)[0])[0]
+}
+
+output "firewall2_public_interface" {
+    value = keys(values(local.firewall_interfaces)[0])[1]
+}
+*/
+output "check_map_contain_a_key" {
+  value = contains(keys(local.firewall_interfaces.azrfwd300a), "management")
+}
+
+output "interface_name_port_map" {
+  value = sort([for k, v in local.firewall_interfaces.azrfwd300a : "${v.interface_port}${k}"])
+}
+
+output "ordered_interface_names" {
+  value = [for e in sort([for k, v in local.firewall_interfaces.azrfwd300a : "${v.interface_port}${k}"]) : substr(e, 1, -1)]
+}
+
+output "internal_loadbalancer_backend_interfaces" {
+  value = [for interface_name, interface_values in local.firewall_interfaces[keys(local.firewall_interfaces)[0]] : interface_name if lookup(interface_values, "loadbalancer", null) == "internal"
+  ]
+}
+# See https://www.terraform.io/docs/configuration/functions/try.html
+output "public_loadbalancer_backend_interfaces" {
+  value = try([for interface_name, interface_values in local.firewall_interfaces[keys(local.firewall_interfaces)[0]] : interface_name if lookup(interface_values, "loadbalancer", null) == "public"
+  ][0], null)
+}
+
+#Use length() to check if a list is empty https://github.com/hashicorp/terraform/issues/23562
+
+#Negate boolean value
+output "true_negate" {
+  value = ! local.truevar
+  #value = local.firewall_interfaces ? true : false
+}
+
+locals {
+  orderlist  = ["hello", "alice", "bob"]
+  orderlist2 = local.orderlist
+  ordermap = {
+    "wonder" = "land"
+    "peter"  = "pan"
+    "mer"    = "maid"
+  }
+}
+/*
+orderoutputlist = [
+  "hello",
+  "alice",
+  "bob",
+]
+*/
+output "orderoutputlist" {
+  value = local.orderlist2
+}
+/*
+noorderoutputmap = {
+  "mer" = "maid"
+  "peter" = "pan"
+  "wonder" = "land"
+}
+*/
+output "noorderoutputmap" {
+  value = local.ordermap
+}
+/*
+noorderoutputkeymap = [
+  "mer",
+  "peter",
+  "wonder",
+]
+*/
+output "noorderoutputkeymap" {
+  value = [for k, _ in local.ordermap : k]
+}
