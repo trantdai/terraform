@@ -1,7 +1,7 @@
 # CHECK IF STRING CONTAINS A CHARACTER
 # https://stackoverflow.com/questions/47243474/how-to-check-if-string-contains-a-substring-in-terraform-interpolation
 # https://www.terraform.io/docs/configuration/functions/replace.html
-
+/*
 variable "address" {
   type    = string
   default = "10.0.0.0/24"
@@ -21,3 +21,4 @@ locals {
 output "addressname" {
   value = local.addressname
 }
+*/

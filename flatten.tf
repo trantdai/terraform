@@ -1,3 +1,4 @@
+/*
 variable "example_objects" {
   type    = list
   default = [
@@ -97,4 +98,4 @@ locals {
 output "address_map" {
     value = local.temp1
 }
-
+*/
