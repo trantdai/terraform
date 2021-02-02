@@ -23,3 +23,63 @@ output "services" {
 output "setproduct" {
   value = flatten([for protocol in ["TCP", "UDP"] : [for service in ["123", "53"] : "${protocol}-${service}"]])
 }
+
+variable "policies" {
+  type = list
+  default = [
+    {
+      "ports" : [
+        [
+          "137-139",
+          "145"
+        ]
+      ],
+      "protocol" : "*",
+    },
+    {
+      "ports" : [
+        [
+          "53"
+        ]
+      ],
+      "protocol" : "*"
+    },
+    {
+      "ports" : [
+        [
+          "1194",
+          "2114"
+        ]
+      ],
+      "protocol" : "Udp"
+    }
+  ]
+}
+
+locals {
+  service_map1 = distinct([
+    for policy in var.policies : {
+      "names" : policy.protocol == "*" ? flatten([for protocol in ["TCP", "UDP"] : [for port in flatten(policy.ports) : "${upper(protocol)}-${port}-${var.nametag}"]]) : upper(policy.protocol) == "TCP" ? [for port in flatten(policy.ports) : "TCP-${port}-${var.nametag}"] : [for port in flatten(policy.ports) : "UDP-${port}-${var.nametag}"]
+      "ports" : flatten(policy.ports)
+    }
+  ])
+  service_list = flatten(distinct(
+    [
+      for policy in var.policies : policy.protocol == "*" ? flatten([for protocol in ["TCP", "UDP"] : [for port in flatten(policy.ports) : "${upper(protocol)}-${port}-${var.nametag}"]]) : upper(policy.protocol) == "TCP" ? [for port in flatten(policy.ports) : "TCP-${port}-${var.nametag}"] : [for port in flatten(policy.ports) : "UDP-${port}-${var.nametag}"]
+    ]
+  ))
+  service_map = {
+    for name in local.service_list : name => {
+      "protocol" : substr(name, 0, 3)
+      "port" : substr(replace(name, "-${var.nametag}", ""), 4, length(replace(name, "-${var.nametag}", "")) - 4)
+    }
+  }
+}
+
+output "service_list" {
+  value = local.service_list
+}
+
+output "service_map" {
+  value = local.service_map
+}

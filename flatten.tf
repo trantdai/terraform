@@ -99,3 +99,16 @@ output "address_map" {
     value = local.temp1
 }
 */
+
+variable "ports" {
+  default = [
+    [
+      "1194",
+      "2114"
+    ]
+  ]
+}
+
+output "ports" {
+  value = flatten(var.ports)
+}
