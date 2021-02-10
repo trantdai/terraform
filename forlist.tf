@@ -52,6 +52,15 @@ variable "policies" {
         ]
       ],
       "protocol" : "Udp"
+    },
+    {
+      "ports" : [
+        [
+          "1195",
+          "2114"
+        ]
+      ],
+      "protocol" : "Udp"
     }
   ]
 }
@@ -63,23 +72,46 @@ locals {
       "ports" : flatten(policy.ports)
     }
   ])
-  service_list = flatten(distinct(
-    [
-      for policy in var.policies : policy.protocol == "*" ? flatten([for protocol in ["TCP", "UDP"] : [for port in flatten(policy.ports) : "${upper(protocol)}-${port}-${var.nametag}"]]) : upper(policy.protocol) == "TCP" ? [for port in flatten(policy.ports) : "TCP-${port}-${var.nametag}"] : [for port in flatten(policy.ports) : "UDP-${port}-${var.nametag}"]
-    ]
-  ))
+  service_list = distinct(
+    flatten(
+      [
+        for policy in var.policies : policy.protocol == "*" ? flatten([for protocol in ["TCP", "UDP"] : [for port in flatten(policy.ports) : "${upper(protocol)}-${port}-${var.nametag}"]]) : [for port in flatten(policy.ports) : "${upper(policy.protocol)}-${port}-${var.nametag}"]
+      ]
+    )
+  )
+
   service_map = {
     for name in local.service_list : name => {
       "protocol" : substr(name, 0, 3)
       "port" : substr(replace(name, "-${var.nametag}", ""), 4, length(replace(name, "-${var.nametag}", "")) - 4)
     }
   }
+
 }
 
 output "service_list" {
   value = local.service_list
 }
-
+/*
 output "service_map" {
   value = local.service_map
+}
+*/
+variable "fwlist" {
+  type    = list
+  default = ["", "azrfwt300", "azrfwt700", "azrfwt600", "azrfwt650"]
+}
+
+locals {
+  fwmap = {
+    for fwname in compact(var.fwlist) : fwname => tonumber(substr(fwname, length(fwname) - 3, 3)) >= 300 && tonumber(substr(fwname, length(fwname) - 3, 3)) < 400 || tonumber(substr(fwname, length(fwname) - 3, 3)) >= 600 && tonumber(substr(fwname, length(fwname) - 3, 3)) < 700
+  }
+}
+
+output "firewall_map" {
+  value = local.fwmap
+}
+
+output "compact" {
+  value = compact(["", "", ""])
 }
