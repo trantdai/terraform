@@ -92,11 +92,11 @@ locals {
 output "service_list" {
   value = local.service_list
 }
-/*
-output "service_map" {
-  value = local.service_map
-}
-*/
+
+#output "service_map" {
+#  value = local.service_map
+#}
+
 variable "fwlist" {
   type    = list
   default = ["", "azrfwt300", "azrfwt700", "azrfwt600", "azrfwt650"]
