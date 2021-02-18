@@ -32,11 +32,6 @@ locals {
   )
 }
 
-output "transformmap" {
-  value = {
-    for item in local.transform : item.role => item
-  }
-}
 /*
 transform = [
   {

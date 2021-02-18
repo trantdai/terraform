@@ -106,6 +106,37 @@ locals {
   fwmap = {
     for fwname in compact(var.fwlist) : fwname => tonumber(substr(fwname, length(fwname) - 3, 3)) >= 300 && tonumber(substr(fwname, length(fwname) - 3, 3)) < 400 || tonumber(substr(fwname, length(fwname) - 3, 3)) >= 600 && tonumber(substr(fwname, length(fwname) - 3, 3)) < 700
   }
+
+  fwlist = [
+    {
+      "dstgroup" = {
+        "firewallGroup" : "fw300",
+        "firewallVendor" : "juniper"
+      },
+      "srcgroup" = {
+        "firewallGroup" : "fw301",
+        "firewallVendor" : "checkpoint"
+      }
+      "midgroup" = {
+        "firewallGroup" : "fw304",
+        "firewallVendor" : "juniper"
+      }
+    },
+    {
+      "dstgroup" = {
+        "firewallGroup" : "fw302",
+        "firewallVendor" : "juniper"
+      },
+      "srcgroup" = {
+        "firewallGroup" : "fw303",
+        "firewallVendor" : "checkpoint"
+      }
+      "midgroup" = {
+        "firewallGroup" : "fw305",
+        "firewallVendor" : "juniper"
+      }
+    }
+  ]
 }
 
 output "firewall_map" {
@@ -114,4 +145,10 @@ output "firewall_map" {
 
 output "compact" {
   value = compact(["", "", ""])
+}
+
+output "firewall_list" {
+  value = [
+    for k, v in local.fwlist[0] : v.firewallGroup if upper(v.firewallVendor) == "JUNIPER" && (k == "dstgroup" || k == "srcgroup")
+  ]
 }
